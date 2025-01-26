@@ -1,0 +1,38 @@
+using UnityEngine;
+using UnityEngine.Networking;
+using System.Collections;
+
+public class FlaskCommunication : MonoBehaviour
+{
+    string flaskURL = "http://127.0.0.1:5000/predict"; // Change this to your Flask server URL
+
+    void Start()
+    {
+        StartCoroutine(SendPostRequest());
+    }
+
+    IEnumerator SendPostRequest()
+    {
+        // Example JSON payload
+        string jsonData = "{\"features\": [6.5, 50, 0.004, 250, 0.7]}";
+
+        // Create a UnityWebRequest
+        UnityWebRequest request = new UnityWebRequest(flaskURL, "POST");
+        byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonData);
+        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        request.downloadHandler = new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
+
+        // Send the request and wait for a response
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            Debug.Log("Response: " + request.downloadHandler.text);
+        }
+        else
+        {
+            Debug.LogError("Request failed: " + request.error);
+        }
+    }
+}
